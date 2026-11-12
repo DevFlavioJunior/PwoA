@@ -13,14 +13,14 @@ source env.sh
 mkdir -p logs/cifar10 results
 
 # Uso:
-#   sbatch scripts/eval_cifar10.sbatch assets/models/<arquivo_modelo.pt> <nome_saida_sem_json> [cw_steps]
+#   sbatch scripts/eval_cifar10.sbatch [caminho_modelo] [nome_saida_sem_json] [cw_steps]
 # Exemplo (modelo original):
-#   sbatch scripts/eval_cifar10.sbatch assets/models/cifar10_resnet18_trades.pt cifar10_resnet18_original_final 50
+#   sbatch scripts/eval_cifar10.sbatch assets/models/1636127673-3280377-2f.pt cifar10_resnet18_original_final 50
 # Exemplo (modelo podado 4x):
 #   sbatch scripts/eval_cifar10.sbatch assets/models/cifar10_resnet18_pwoa_prune_0.75_irregular_mix_0_ree100.pt cifar10_resnet18_pwoa_075_final 50
 
-MODEL_FILE=${1:?Informe o caminho do modelo em $1 (ex: assets/models/cifar10_resnet18_trades.pt)}
-OUT_NAME=${2:?Informe o nome do arquivo de saida em $2 (ex: cifar10_resnet18_original_final)}
+MODEL_FILE=${1:-assets/models/1636127673-3280377-2f.pt}
+OUT_NAME=${2:-cifar10_resnet18_original_final}
 CW_STEPS=${3:-50}
 
 python eval_all.py \

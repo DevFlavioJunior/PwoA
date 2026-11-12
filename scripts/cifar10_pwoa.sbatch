@@ -13,10 +13,10 @@ source env.sh
 mkdir -p logs/cifar10
 
 # Argumentos opcionais:
-# $1 = nome do arquivo do modelo professor dentro de assets/models/ (padrao: cifar10_resnet18_trades.pt)
+# $1 = nome do arquivo do modelo professor dentro de assets/models/ (padrao: 1636127673-3280377-2f.pt)
 # $2 = prune_ratio (padrao: 0.75 -> poda 4x)
 # $3 = 1 para podar tambem a camada linear final (PWOA_PRUNE_ALL=1), 0 apenas convs (padrao: 0)
-preTrades=${1:-cifar10_resnet18_trades.pt}
+preTrades=${1:-1636127673-3280377-2f.pt}
 pr=${2:-0.75}
 if [ "${3:-0}" = "1" ]; then
     export PWOA_PRUNE_ALL=1
