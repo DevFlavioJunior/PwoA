@@ -75,7 +75,7 @@ for k in own_state.keys():
     if k not in cleaned_sd:
         print("missing in checkpoint: ", k, flush=True)
 
-model.load_state_dict(cleaned_sd, strict=False)
+model.load_state_dict(cleaned_sd, strict=True)
 model.to(dev).eval()
 
 if a.dataset == "mnist":
