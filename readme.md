@@ -80,6 +80,9 @@ Python 3.10.12, torch 2.14.1 (CUDA 13), torchvision 0.29.2, torchattacks 3.5.1, 
 - torchattacks (patches/): get_logits aceita saída em tupla, como a LeNet3 do projeto.
 - source/hsicbt/math/admm.py: a variável de ambiente PWOA_PRUNE_ALL=1 faz a poda incluir também as camadas lineares (por padrão só pesos de 4 dimensões, isto é, convoluções, e camadas chamadas fc).
 - eval_all.py (novo): mede acurácia natural, FGSM, PGD10, PGD20, CW (PGD com a perda do CW) e AutoAttack (versão standard), com eps 0.3 e passo 0.01 no MNIST.
+- eval_all.py tambem aceita --dataset fmnist (use --eps 0.1 para o Fashion-MNIST).
+- Fashion-MNIST: lenet.py, train_misc.py, engine.py e dataset.py recebem ajustes pequenos (marcados com [EQUIPE] nos comentarios): mesma dimensao da fc1 e mesmos marcos de taxa de aprendizado do MNIST, load_model so quando tem valor e embaralhamento do treino. train_hsic_prune.py perde o campo hsicLoss da mensagem sem destilacao (causava KeyError).
+- Os comentarios com [EQUIPE] no codigo marcam tudo o que foi alterado em relacao ao original.
 
 ## Como reproduzir o MNIST (LeNet3, poda 4x)
 
@@ -116,6 +119,30 @@ Artigo (Tabela II, PwoA, LeNet): 4x = 98,66 / 95,89 / 97,35 / 96,16 / CW 96,15 /
 - O modelo salvo é o de maior robustez sob PGD de 40 passos no conjunto de teste (não há validação), o que é otimista.
 - Uma execução por configuração; GPU e versões de bibliotecas diferentes das do artigo.
 
+## Fashion-MNIST (conjunto extra; mesma LeNet3, 28x28, 10 classes)
+
+Não existe modelo robusto público para o Fashion-MNIST, então treinamos o professor com treino adversarial PGD (raio 0,1, 20 passos, passo 0,01, Adam, taxa 0,001; escolhas nossas, não do artigo). Depois aplicamos o PwoA com os mesmos hiperparâmetros do MNIST (4x, 50 épocas de ADMM e 20 de ajuste fino).
+
+1. Baixar o Fashion-MNIST uma vez no nó de login (pasta assets/data/fasionmnist-data).
+2. Professor, poda e avaliação:
+
+        sbatch scripts/fmnist_pretrain.sbatch 30 pgd                                  # gera assets/models/fmnist_lenet3_pgd.pt
+        sbatch scripts/fmnist_pwoa.sbatch 0.75 0 conv fmnist_lenet3_pgd.pt            # 4x, só convoluções
+        sbatch scripts/fmnist_pwoa.sbatch 0.75 1 all fmnist_lenet3_pgd.pt             # 4x, todas as camadas
+        sbatch scripts/eval_fmnist.sbatch assets/models/<modelo>.pt <nome_do_resultado>
+
+Os scripts com sufixo _gabriel são uma variante com argumentos opcionais, mantida como foi enviada.
+
+### Resultados no Fashion-MNIST (10.000 imagens de teste, raio 0,1, CW com 50 passos)
+
+| Modelo | Zeros no modelo | Natural | FGSM | PGD10 | PGD20 | CW | AutoAttack |
+|---|---|---|---|---|---|---|---|
+| Professor (sem poda) | 0,00% | 88,04 | 81,14 | 81,47 | 78,56 | 77,98 | 76,33 |
+| 4x, só convoluções | 1,19% | 88,01 | 81,05 | 81,03 | 77,99 | 77,02 | 75,50 |
+| 4x, todas as camadas | 74,97% | 87,91 | 80,94 | 80,72 | 77,80 | 76,92 | 75,30 |
+
+Não há valores de referência do artigo para este conjunto. A poda custa no máximo 0,13 ponto de acurácia natural e 1,03 ponto de AutoAttack; diferenças desse tamanho, com uma execução por configuração, estão perto do ruído.
+
 ## Em andamento
 
-CIFAR-10, CIFAR-100 e Fashion-MNIST (dataset adicional).
+CIFAR-10 e CIFAR-100 (a cargo dos colegas; a branch cifar10 já existe).
