@@ -118,24 +118,27 @@ Artigo (Tabela II, PwoA, LeNet): 4x = 98,66 / 95,89 / 97,35 / 96,16 / CW 96,15 /
 
 3. Treinar e podar (50 épocas ADMM + 100 épocas fine-tuning, SGD/cosine, lr 0.01/0.005, lx=2e-5, ly=1e-4, tau=30, lambda=10, mix_ratio=0):
 
-        sbatch scripts/cifar10_pwoa.sbatch 1636127673-3280377-2f.pt 0.75 0    # poda 4x (75%)
+        sbatch scripts/cifar10_pwoa_075_full.sbatch                            # poda 4x completa (75%) + avaliacao CW-50/AA e CW-20
         sbatch scripts/cifar10_pwoa.sbatch 1636127673-3280377-2f.pt 0.875 0   # poda 8x (87.5%)
 
 4. Avaliar (eps=8/255, passo=2/255, 10.000 imagens de teste):
 
         sbatch scripts/eval_cifar10.sbatch assets/models/1636127673-3280377-2f.pt cifar10_resnet18_original_final 50
-        sbatch scripts/eval_cifar10.sbatch assets/models/cifar10_resnet18_pwoa_prune_0.75_irregular_mix_0_ree100.pt cifar10_resnet18_pwoa_075_final 50
+        sbatch scripts/eval_cifar10.sbatch assets/models/cifar10_resnet18_pwoa_075_full.pt cifar10_resnet18_pwoa_075_full_final 50
         sbatch scripts/eval_cifar10.sbatch assets/models/cifar10_resnet18_pwoa_prune_0.875_irregular_mix_0_ree100.pt cifar10_resnet18_pwoa_0875_final 50
 
 ## Resultados no CIFAR-10 (ResNet-18 TRADES, 10.000 imagens de teste)
 
-| Modelo | Zeros no modelo | Natural | FGSM | PGD10 | PGD20 | CW (50 passos) | AutoAttack |
-|---|---|---|---|---|---|---|---|
-| Original (sem poda) | 0,00% | 84,05 | 58,84 | 53,70 | 52,84 | 50,80 | 49,84 |
-| 4x (`pr=0.75`) | 74,90% | 84,36 | 57,61 | 51,03 | 49,72 | 47,84 | 46,65 |
-| 8x (`pr=0.875`) | 87,38% | 84,44 | 55,71 | 46,39 | 44,35 | 42,89 | 41,69 |
+| Modelo | Zeros no modelo | Natural | FGSM | PGD10 | PGD20 | CW (50 passos) | AutoAttack | Observação |
+|---|---|---|---|---|---|---|---|---|
+| Original (sem poda) | 0,00% | 84,05 | 58,84 | 53,70 | 52,84 | 50,80 | 49,84 | 1636127673-3280377-2f.pt |
+| 4x preliminar (`pr=0.75`) | 74,90% | 84,36 | 57,61 | 51,03 | 49,72 | 47,84 | 46,65 | 50 ADMM + 37/100 ajuste fino (limite 4h no node6, 12/11/2026) |
+| 4x completo (`pr=0.75`) | 74,90% | *(em execução)* | *(em execução)* | *(em execução)* | *(em execução)* | *(em execução)* | *(em execução)* | 50 ADMM + 100/100 ajuste fino (refeito c/ limite 12h e `--exclude=cluster-node6`, 12/11/2026) |
+| 8x completo (`pr=0.875`) | 87,38% | 84,44 | 55,71 | 46,39 | 44,35 | 42,89 | 41,69 | 50 ADMM + 100/100 ajuste fino (7596,72 s no node9, 12/11/2026) |
 
-Artigo (Tabela I, Original ResNet-18 TRADES): Natural 84,10 / FGSM 58,97 / PGD10 53,76 / PGD20 52,92 / CW 51,00 / AA 49,43. Artigo estendido (Tabela VIII, PwoA 4x, ResNet-18): Natural 86,07 / PGD10 49,61 (tempo de treino: 7596,72 s no cluster-node9).
+Artigo (Tabela I, Original ResNet-18 TRADES): Natural 84,10 / FGSM 58,97 / PGD10 53,76 / PGD20 52,92 / CW 51,00 / AA 49,43. Artigo estendido (Tabela VIII, PwoA 4x, ResNet-18): Natural 86,07 / PGD10 49,61.
+
+Nota sobre a execução 4x: a primeira execução do modelo 4x (`cifar10_resnet18_pwoa_075_final.json`, em 12/11/2026) caiu no `cluster-node6` (~3,7x mais lento que o `cluster-node9`) e atingiu o limite inicial de 4h na época 37 de 100 do ajuste fino (após concluir todas as 50 épocas de ADMM e o `hard_prune`). Esse resultado preliminar foi preservado, e uma nova execução completa de 150 épocas (50 ADMM + 100 ajuste fino) foi lançada em 12/11/2026 com limite de 12h e `--exclude=cluster-node6`, salvando separadamente em `cifar10_resnet18_pwoa_075_full.pt` e `results/cifar10_resnet18_pwoa_075_full_final.json`.
 
 ## Diferenças em relação ao artigo e limitações
 
