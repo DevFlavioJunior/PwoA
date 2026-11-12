@@ -54,3 +54,68 @@ cifar100.sh      # PwoA on CIFAR-100
 ```
 
 Please refer to [./bin/run_hbar](./run_hbar) for more usages. The arguments in the code are self-explanatory.
+
+---
+
+# Reprodução do PwoA no cluster Apuana (CIN0114 - 2026.2)
+
+Equipe: Flávio Henrique, José Lucas, Gabriel Clemente e Wilton Sales
+
+Projeto da disciplina Técnicas de Ataque e Detecção de Intrusão (CIn/UFPE).
+Artigo: Jian et al., "Pruning Adversarially Robust Neural Networks without Adversarial Examples", ICDM 2022 (arXiv 2210.04311).
+Este repositório é um fork de neu-spiral/PwoA com ajustes de compatibilidade, scripts de treino e avaliação e resultados.
+
+## Ambiente usado
+
+Python 3.10.12, torch 2.14.1 (CUDA 13), torchvision 0.29.2, torchattacks 3.5.1, numpy 2.2.6, scipy 1.15.3, pyyaml, tqdm. GPU NVIDIA A100 80GB (o artigo usa Tesla V100).
+
+    python3 -m venv ~/pwoa_env && source ~/pwoa_env/bin/activate
+    pip install torch torchvision numpy scipy pyyaml tqdm torchattacks
+    source env.sh
+    python patches/apply_torchattacks_patch.py   # get_logits aceita modelos que devolvem tupla
+
+## Alterações no código dos autores
+
+- source/hsicbt/utils/misc.py: to_categorical cria a matriz identidade no mesmo dispositivo dos rótulos (exigido pelo PyTorch 2.x).
+- torchattacks (patches/): get_logits aceita saída em tupla, como a LeNet3 do projeto.
+- source/hsicbt/math/admm.py: a variável de ambiente PWOA_PRUNE_ALL=1 faz a poda incluir também as camadas lineares (por padrão só pesos de 4 dimensões, isto é, convoluções, e camadas chamadas fc).
+- eval_all.py (novo): mede acurácia natural, FGSM, PGD10, PGD20, CW (PGD com a perda do CW) e AutoAttack (versão standard), com eps 0.3 e passo 0.01 no MNIST.
+
+## Como reproduzir o MNIST (LeNet3, poda 4x)
+
+1. Baixar o modelo pré-treinado (Model Zoo do HBaR, http://hdl.handle.net/2047/D20419656) para assets/models/ (arquivo usado: 1636127344-0616112-c6.pt).
+2. Baixar o MNIST uma vez no nó de login (os nós de computação podem não ter internet).
+3. Treinar e podar:
+
+        sbatch scripts/mnist_pwoa.sbatch                       # só convoluções
+        sbatch scripts/mnist_pwoa_var.sbatch 0.75 1 all        # poda uniforme (todas as camadas)
+        sbatch scripts/mnist_pwoa_var.sbatch 0.875 0 conv      # 8x, só convoluções
+
+4. Avaliar (nomes dos modelos em assets/models/):
+
+        sbatch scripts/eval_final.sbatch assets/models/<modelo>.pt <nome_do_resultado>
+
+Resultados em results/*.json. Os arquivos *_aa500.json usam só 500 imagens e servem apenas de teste de tempo.
+
+## Resultados no MNIST (10.000 imagens de teste, uma execução por configuração)
+
+| Modelo | Zeros no modelo | Natural | FGSM | PGD10 | PGD20 | CW (20 passos) | CW (50 passos) | AutoAttack |
+|---|---|---|---|---|---|---|---|---|
+| Original (sem poda) | 0,00% | 98,84 | 96,75 | 97,98 | 97,05 | 97,16 | 95,14 | 91,86 |
+| 4x, só convoluções | 1,19% | 98,81 | 96,01 | 97,70 | 96,37 | 96,36 | 93,88 | 89,69 |
+| 4x, todas as camadas | 74,97% | 98,82 | 96,29 | 97,68 | 96,35 | 96,30 | 93,89 | 88,78 |
+| 8x, só convoluções | 1,39% | 98,82 | 95,18 | 97,43 | 95,68 | 95,65 | 91,98 | 87,06 |
+
+Artigo (Tabela II, PwoA, LeNet): 4x = 98,66 / 95,89 / 97,35 / 96,16 / CW 96,15 / AA 90,00; 8x = 98,66 / 95,69 / 97,13 / 95,61 / CW 95,60 / AA 87,37. Modelo original (Tabela I): 98,66 / PGD20 96,44 / CW 95,10 / AA 91,57.
+
+## Diferenças em relação ao artigo e limitações
+
+- O código poda só as convoluções da LeNet3 (fc1 e fc2 ficam densas); o artigo descreve taxa uniforme. A variante PWOA_PRUNE_ALL=1 faz a poda uniforme.
+- O script dos autores liga o termo HSIC só no fine-tuning, otimiza com Adam, usa lx e ly iguais à metade dos da Tabela IX e 100 épocas de fine-tuning no MNIST; usamos 20, como no artigo.
+- O artigo não informa os passos do CW nem a versão do AutoAttack. Reportamos CW com 20 e 50 passos (20 casa com a Tabela II e 50 com a Tabela I).
+- O modelo salvo é o de maior robustez sob PGD de 40 passos no conjunto de teste (não há validação), o que é otimista.
+- Uma execução por configuração; GPU e versões de bibliotecas diferentes das do artigo.
+
+## Em andamento
+
+CIFAR-10, CIFAR-100 e Fashion-MNIST (dataset adicional).
