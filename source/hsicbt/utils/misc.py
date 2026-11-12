@@ -228,4 +228,6 @@ def get_layer_parameters(model, idx_range):
 
 def to_categorical(y, num_classes):
     """ 1-hot encodes a tensor """
+    # [EQUIPE] AJUSTE DE COMPATIBILIDADE (PyTorch 2.x): a matriz identidade precisa estar no mesmo
+    # dispositivo (CPU/GPU) que os rotulos y, senao ocorre erro de dispositivo diferente.
     return torch.squeeze(torch.eye(num_classes, device=getattr(y, "device", None))[y])

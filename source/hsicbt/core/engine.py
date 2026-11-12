@@ -26,6 +26,8 @@ def training_standard(config_dict):
     model = model_distribution(config_dict)
     
     # load pretrained model
+    # [EQUIPE] AJUSTE (Fashion-MNIST): so carrega pesos pre-treinados se 'load_model' tiver valor.
+    # Antes bastava a chave existir; o pre-treino do professor do Fashion-MNIST parte do zero.
     if config_dict.get('load_model'):
         model = load_state_dict(model, get_model_path("{}".format(config_dict['load_model'])))
     model = model.to(config_dict['device'])

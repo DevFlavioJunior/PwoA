@@ -63,6 +63,7 @@ def set_optimizer(config_dict, model, train_loader, opt, lr, epochs):
                 by gamma once the number of epoch reaches one of the milestones
         """
         gamma=0.1
+        # [EQUIPE] EXTENSAO: o Fashion-MNIST usa os mesmos marcos de queda da taxa de aprendizado do MNIST.
         if config_dict['data_code'] in ('mnist', 'fmnist'):
             if epochs <= 50:
                 epoch_milestones = [20, 40]

@@ -35,6 +35,11 @@ class ADMM:
         # setup pruning ratio
         self.prune_ratios = {}
         for name, weight in model.named_parameters():
+            # [EQUIPE] MODIFICACAO: poda uniforme em todas as camadas.
+            # O codigo original so poda pesos de 4 dimensoes (convolucoes) ou nomes com 'fc.weight';
+            # na LeNet3 (fc1, fc2) as camadas totalmente conectadas ficavam densas (so 1,19% do modelo zerado).
+            # Com a variavel de ambiente PWOA_PRUNE_ALL=1, tambem entram os pesos de 2 dimensoes (fc1, fc2).
+            # Sem a variavel, o comportamento original continua identico.
             if (len(weight.size()) == 4) or 'fc.weight' in name or (__import__('os').environ.get('PWOA_PRUNE_ALL') == '1' and len(weight.size()) == 2):
                 self.prune_ratios[name] = self.prune_ratio
         

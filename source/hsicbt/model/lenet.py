@@ -21,6 +21,8 @@ class LeNet3(nn.Module):
         self.conv2 = torch.nn.Conv2d(32, 64, 5, 1, 2)
         
         # Fully connected layer
+        # [EQUIPE] EXTENSAO: o Fashion-MNIST tem imagens 28x28 como o MNIST, entao a primeira camada
+        # totalmente conectada tem a mesma dimensao de entrada (7*7*64).
         if data_code in ('mnist', 'fmnist'):
             dim = 7*7*64
         elif data_code == 'cifar10':

@@ -197,6 +197,8 @@ def hsic_prune(cepoch, model, data_loader, optimizer, scheduler, config_dict, AD
                         hsic_zy = batch_hischy.avg,
                     )
         else:
+            # [EQUIPE] AJUSTE: removido o campo hsicLoss desta mensagem (caso sem destilacao); o .format()
+            # abaixo nao recebe hsic_loss e o campo causava KeyError no pre-treino do Fashion-MNIST.
             msg = 'Train Epoch: {cepoch} [ {cidx:5d}/{tolidx:5d} ({perc:2d}%)] totalLoss: {total_loss:.4f} Acc:{acc:.4f} hsic_xz:{hsic_zx:.4f} hsic_yz:{hsic_zy:.4f}'.format(
                         cepoch = cepoch,  
                         cidx = (batch_idx+1)*config_dict['batch_size'], 
