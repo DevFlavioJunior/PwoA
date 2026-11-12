@@ -28,6 +28,8 @@ def load_state_dict(model, filepath):
     
     for name, param in state_dict.items():
         name = name.replace("module.model.", "") # for madry loaded model
+        if name not in own_state and name.startswith("module."):
+            name = name[len("module."):]
         if name not in own_state:
             print('not found: ',name)
             continue

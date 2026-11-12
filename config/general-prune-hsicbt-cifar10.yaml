@@ -1,6 +1,6 @@
 batch_size: 128
 learning_rate: 0.01
-epochs: 0
+epochs: 50
 sigma: 5.
 lambda_x: 0
 lambda_y: 0
@@ -8,7 +8,7 @@ seed: 1234
 k_type_y: linear
 
 device: cuda
-model: wrn34-10
+model: resnet18
 data_code: cifar10
 num_classes: 10
 model_file: test.pt
@@ -18,7 +18,7 @@ task: prune
 training_type: hsictrain
 
 optimizer: sgd
-lr_scheduler : default
+lr_scheduler : cosine
 warmup :  False
 warmup_lr :  0.0001
 warmup_epochs :  5
@@ -40,9 +40,9 @@ rho: 0.01
 multi_rho: True
 retrain_bs: 128
 retrain_lr: 0.005
-retrain_ep: 50
-retrain_lx: 0
-retrain_ly: 0
+retrain_ep: 100
+retrain_lx: 0.00002
+retrain_ly: 0.0001
 retrain_opt: sgd
 retraining_type: hsictrain
 
