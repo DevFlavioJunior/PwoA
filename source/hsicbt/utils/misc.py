@@ -228,4 +228,4 @@ def get_layer_parameters(model, idx_range):
 
 def to_categorical(y, num_classes):
     """ 1-hot encodes a tensor """
-    return torch.squeeze(torch.eye(num_classes)[y])
+    return torch.squeeze(torch.eye(num_classes, device=getattr(y, "device", None))[y])

@@ -1,0 +1,17 @@
+"""Aplica o ajuste no torchattacks: get_logits passa a aceitar modelos que devolvem tupla
+(a LeNet do PwoA devolve (saida, ativacoes)). Rode com o ambiente virtual ativo."""
+import os
+import torchattacks
+
+p = os.path.join(os.path.dirname(torchattacks.__file__), "attack.py")
+s = open(p, newline="").read()
+eol = "\r\n" if "\r\n" in s else "\n"
+old = eol.join(["        logits = self.model(inputs)", "        return logits", ""])
+new = eol.join(["        logits = self.model(inputs)", "        if isinstance(logits, tuple):",
+                "            logits = logits[0]", "        return logits", ""])
+if new in s:
+    print("ja aplicado")
+else:
+    assert s.count(old) == 1, "trecho nao encontrado exatamente uma vez"
+    open(p, "w", newline="").write(s.replace(old, new))
+    print("aplicado")

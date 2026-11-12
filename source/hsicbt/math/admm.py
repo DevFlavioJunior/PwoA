@@ -35,7 +35,7 @@ class ADMM:
         # setup pruning ratio
         self.prune_ratios = {}
         for name, weight in model.named_parameters():
-            if (len(weight.size()) == 4) or 'fc.weight' in name:
+            if (len(weight.size()) == 4) or 'fc.weight' in name or (__import__('os').environ.get('PWOA_PRUNE_ALL') == '1' and len(weight.size()) == 2):
                 self.prune_ratios[name] = self.prune_ratio
         
         # setup rho

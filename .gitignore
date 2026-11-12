@@ -11,3 +11,7 @@ Thumbs.db
 *.pt
 *.npy
 *.out
+assets/
+logs/
+*.bak
+__pycache__/

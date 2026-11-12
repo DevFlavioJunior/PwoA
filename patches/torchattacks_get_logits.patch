@@ -1,0 +1,11 @@
+--- /home/CIN/fhmj/pwoa_env/lib/python3.10/site-packages/torchattacks/attack.py.bak	2026-11-04 21:22:36.855107507 -0300
++++ /home/CIN/fhmj/pwoa_env/lib/python3.10/site-packages/torchattacks/attack.py	2026-11-04 21:22:42.784274478 -0300
+@@ -77,6 +77,8 @@
+         if self._normalization_applied is False:
+             inputs = self.normalize(inputs)
+         logits = self.model(inputs)
++        if isinstance(logits, tuple):
++            logits = logits[0]
+         return logits
+ 
+     @wrapper_method

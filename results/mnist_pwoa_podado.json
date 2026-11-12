@@ -1,0 +1,10 @@
+{
+  "model_file": "assets/models/mnist_lenet3_pwoa_prune_0.75_irregular_mix_0_ree20.pt",
+  "n": 10000,
+  "zeros_pct": 1.1909727926846176,
+  "natural": 98.81,
+  "FGSM": 96.01,
+  "PGD10": 97.7,
+  "PGD20": 96.37,
+  "CW": 96.36
+}
