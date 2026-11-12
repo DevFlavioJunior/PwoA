@@ -79,7 +79,8 @@ Python 3.10.12, torch 2.14.1 (CUDA 13), torchvision 0.29.2, torchattacks 3.5.1, 
 - source/hsicbt/utils/misc.py: to_categorical cria a matriz identidade no mesmo dispositivo dos rótulos (exigido pelo PyTorch 2.x).
 - torchattacks (patches/): get_logits aceita saída em tupla, como a LeNet3 do projeto.
 - source/hsicbt/math/admm.py: a variável de ambiente PWOA_PRUNE_ALL=1 faz a poda incluir também as camadas lineares (por padrão só pesos de 4 dimensões, isto é, convoluções, e camadas chamadas fc).
-- eval_all.py (novo): mede acurácia natural, FGSM, PGD10, PGD20, CW (PGD com a perda do CW) e AutoAttack (versão standard), com eps 0.3 e passo 0.01 no MNIST.
+- eval_all.py (novo): mede acurácia natural, FGSM, PGD10, PGD20, CW (PGD com a perda do CW) e AutoAttack (versão standard), com eps 0.3 e passo 0.01 no MNIST (e eps 8/255, passo 2/255 no CIFAR-10).
+- source/hsicbt/utils/io.py: remove também o prefixo `module.` ao carregar checkpoints, caso presente.
 
 ## Como reproduzir o MNIST (LeNet3, poda 4x)
 
@@ -108,14 +109,42 @@ Resultados em results/*.json. Os arquivos *_aa500.json usam só 500 imagens e se
 
 Artigo (Tabela II, PwoA, LeNet): 4x = 98,66 / 95,89 / 97,35 / 96,16 / CW 96,15 / AA 90,00; 8x = 98,66 / 95,69 / 97,13 / 95,61 / CW 95,60 / AA 87,37. Modelo original (Tabela I): 98,66 / PGD20 96,44 / CW 95,10 / AA 91,57.
 
+## Como reproduzir o CIFAR-10 (ResNet-18 TRADES, poda 4x e 8x)
+
+1. Baixar o modelo pré-treinado ResNet-18 (HBaR + TRADES) do Model Zoo do HBaR (http://hdl.handle.net/2047/D20419657) para `assets/models/1636127673-3280377-2f.pt`.
+2. Preparar o ambiente e baixar o CIFAR-10 no nó de login:
+
+        bash scripts/setup_cifar10.sh
+
+3. Treinar e podar (50 épocas ADMM + 100 épocas fine-tuning, SGD/cosine, lr 0.01/0.005, lx=2e-5, ly=1e-4, tau=30, lambda=10, mix_ratio=0):
+
+        sbatch scripts/cifar10_pwoa.sbatch 1636127673-3280377-2f.pt 0.75 0    # poda 4x (75%)
+        sbatch scripts/cifar10_pwoa.sbatch 1636127673-3280377-2f.pt 0.875 0   # poda 8x (87.5%)
+
+4. Avaliar (eps=8/255, passo=2/255, 10.000 imagens de teste):
+
+        sbatch scripts/eval_cifar10.sbatch assets/models/1636127673-3280377-2f.pt cifar10_resnet18_original_final 50
+        sbatch scripts/eval_cifar10.sbatch assets/models/cifar10_resnet18_pwoa_prune_0.75_irregular_mix_0_ree100.pt cifar10_resnet18_pwoa_075_final 50
+        sbatch scripts/eval_cifar10.sbatch assets/models/cifar10_resnet18_pwoa_prune_0.875_irregular_mix_0_ree100.pt cifar10_resnet18_pwoa_0875_final 50
+
+## Resultados no CIFAR-10 (ResNet-18 TRADES, 10.000 imagens de teste)
+
+| Modelo | Zeros no modelo | Natural | FGSM | PGD10 | PGD20 | CW (50 passos) | AutoAttack |
+|---|---|---|---|---|---|---|---|
+| Original (sem poda) | 0,00% | 84,05 | 58,84 | 53,70 | 52,84 | 50,80 | 49,84 |
+| 4x (`pr=0.75`) | 74,90% | 84,36 | 57,61 | 51,03 | 49,72 | 47,84 | 46,65 |
+| 8x (`pr=0.875`) | 87,38% | 84,44 | 55,71 | 46,39 | 44,35 | 42,89 | 41,69 |
+
+Artigo (Tabela I, Original ResNet-18 TRADES): Natural 84,10 / FGSM 58,97 / PGD10 53,76 / PGD20 52,92 / CW 51,00 / AA 49,43. Artigo estendido (Tabela VIII, PwoA 4x, ResNet-18): Natural 86,07 / PGD10 49,61 (tempo de treino: 7596,72 s no cluster-node9).
+
 ## Diferenças em relação ao artigo e limitações
 
-- O código poda só as convoluções da LeNet3 (fc1 e fc2 ficam densas); o artigo descreve taxa uniforme. A variante PWOA_PRUNE_ALL=1 faz a poda uniforme.
-- O script dos autores liga o termo HSIC só no fine-tuning, otimiza com Adam, usa lx e ly iguais à metade dos da Tabela IX e 100 épocas de fine-tuning no MNIST; usamos 20, como no artigo.
+- O código poda só as convoluções da LeNet3 (fc1 e fc2 ficam densas); o artigo descreve taxa uniforme. A variante PWOA_PRUNE_ALL=1 faz a poda uniforme. Na ResNet-18, as convoluções concentram 99,91% dos parâmetros (11.164.352 de 11.173.962), então a poda padrão já atinge 74,90% (4x) e 87,38% (8x) de zeros no modelo inteiro.
+- O script dos autores liga o termo HSIC só no fine-tuning, otimiza com Adam, usa lx e ly iguais à metade dos da Tabela IX e 100 épocas de fine-tuning no MNIST; usamos 20, como no artigo. No CIFAR-10 são usadas 50 épocas de ADMM e 100 de fine-tuning com SGD e escalonador cosseno.
 - O artigo não informa os passos do CW nem a versão do AutoAttack. Reportamos CW com 20 e 50 passos (20 casa com a Tabela II e 50 com a Tabela I).
-- O modelo salvo é o de maior robustez sob PGD de 40 passos no conjunto de teste (não há validação), o que é otimista.
+- O modelo salvo é o de maior robustez sob PGD no conjunto de teste (não há validação), o que é otimista.
 - Uma execução por configuração; GPU e versões de bibliotecas diferentes das do artigo.
 
 ## Em andamento
 
-CIFAR-10, CIFAR-100 e Fashion-MNIST (dataset adicional).
+CIFAR-100 e Fashion-MNIST (dataset adicional).
