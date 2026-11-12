@@ -14,6 +14,7 @@ p.add_argument("--alpha", type=float, default=0.01)
 p.add_argument("--cw-steps", type=int, default=20)
 p.add_argument("--skip-aa", action="store_true")
 p.add_argument("--device", default="cuda:0")
+p.add_argument("--dataset", default="mnist", choices=["mnist", "fmnist"])
 p.add_argument("--out", default="")
 a = p.parse_args()
 
@@ -21,15 +22,17 @@ torch.manual_seed(1234)
 torch.cuda.manual_seed(1234)
 dev = a.device
 
-model = LeNet3(data_code="mnist", robustness=True)
+model = LeNet3(data_code=a.dataset, robustness=True)
 sd = torch.load(a.model_file, map_location="cpu")
 if isinstance(sd, dict) and "state_dict" in sd:
     sd = sd["state_dict"]
 model.load_state_dict(sd)
 model.to(dev).eval()
 
-test = datasets.MNIST("./assets/data/mnist-data", train=False, download=False,
-                      transform=transforms.ToTensor())
+if a.dataset == "mnist":
+    test = datasets.MNIST("./assets/data/mnist-data", train=False, download=False, transform=transforms.ToTensor())
+else:
+    test = datasets.FashionMNIST("./assets/data/fasionmnist-data", train=False, download=False, transform=transforms.ToTensor())
 n = min(a.n, len(test))
 loader = torch.utils.data.DataLoader(torch.utils.data.Subset(test, range(n)),
                                      batch_size=a.bs, shuffle=False)

@@ -37,7 +37,7 @@ def get_fasionmnist_data(data_folder_path, batch_size=64):
                                  ])
     # Download and load the training data
     trainset = datasets.FashionMNIST(data_folder_path, download=True, train=True, transform=transform)
-    trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=False)
+    trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=True)
 
     # Download and load the test data
     testset = datasets.FashionMNIST(data_folder_path, download=True, train=False, transform=transform)

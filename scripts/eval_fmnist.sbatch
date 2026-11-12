@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=eval_fmnist
+#SBATCH --job-name=eval_fm
 #SBATCH --partition=short-simple
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=4
@@ -11,7 +11,4 @@
 
 source ~/pwoa_env/bin/activate
 source env.sh
-mkdir -p logs/fmnist
-
-# Uso: sbatch scripts/eval_fmnist.sbatch assets/models/<arquivo_modelo.pt> <nome_saida_sem_json>
-python eval_all.py --dataset fmnist --eps 0.1 --model-file "$1" --cw-steps 50 --out "results/$2.json"
+python eval_all.py --dataset fmnist --eps 0.1 --cw-steps 50 --model-file "$1" --out "results/$2.json"

@@ -197,7 +197,7 @@ def hsic_prune(cepoch, model, data_loader, optimizer, scheduler, config_dict, AD
                         hsic_zy = batch_hischy.avg,
                     )
         else:
-            msg = 'Train Epoch: {cepoch} [ {cidx:5d}/{tolidx:5d} ({perc:2d}%)] hsicLoss: {hsic_loss:.4f} totalLoss: {total_loss:.4f} Acc:{acc:.4f} hsic_xz:{hsic_zx:.4f} hsic_yz:{hsic_zy:.4f}'.format(
+            msg = 'Train Epoch: {cepoch} [ {cidx:5d}/{tolidx:5d} ({perc:2d}%)] totalLoss: {total_loss:.4f} Acc:{acc:.4f} hsic_xz:{hsic_zx:.4f} hsic_yz:{hsic_zy:.4f}'.format(
                         cepoch = cepoch,  
                         cidx = (batch_idx+1)*config_dict['batch_size'], 
                         tolidx = n_data,

@@ -1,0 +1,11 @@
+{
+  "model_file": "assets/models/fmnist_lenet3_pwoa_conv_0.75_irregular_mix_0_ree20.pt",
+  "n": 10000,
+  "zeros_pct": 1.1909727926846176,
+  "natural": 88.01,
+  "FGSM": 81.05,
+  "PGD10": 81.03,
+  "PGD20": 77.99,
+  "CW": 77.02,
+  "AA": 75.5
+}

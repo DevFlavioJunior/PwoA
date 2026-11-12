@@ -26,7 +26,7 @@ def training_standard(config_dict):
     model = model_distribution(config_dict)
     
     # load pretrained model
-    if 'load_model' in config_dict:
+    if config_dict.get('load_model'):
         model = load_state_dict(model, get_model_path("{}".format(config_dict['load_model'])))
     model = model.to(config_dict['device'])
     

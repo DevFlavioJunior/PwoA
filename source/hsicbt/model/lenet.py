@@ -21,7 +21,7 @@ class LeNet3(nn.Module):
         self.conv2 = torch.nn.Conv2d(32, 64, 5, 1, 2)
         
         # Fully connected layer
-        if data_code == 'mnist':
+        if data_code in ('mnist', 'fmnist'):
             dim = 7*7*64
         elif data_code == 'cifar10':
             dim = 8*8*64

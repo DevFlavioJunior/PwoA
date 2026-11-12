@@ -1,0 +1,11 @@
+{
+  "model_file": "assets/models/fmnist_lenet3_pgd.pt",
+  "n": 10000,
+  "zeros_pct": 0.0,
+  "natural": 88.04,
+  "FGSM": 81.14,
+  "PGD10": 81.47,
+  "PGD20": 78.56,
+  "CW": 77.98,
+  "AA": 76.33
+}
