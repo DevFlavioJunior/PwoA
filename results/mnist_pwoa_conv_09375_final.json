@@ -1,0 +1,16 @@
+{
+  "model_file": "assets/models/mnist_lenet3_pwoa_conv16_0.9375_irregular_mix_0_ree20.pt",
+  "dataset": "mnist",
+  "model": "lenet3",
+  "eps": 0.3,
+  "alpha": 0.01,
+  "cw_steps": 50,
+  "n": 10000,
+  "zeros_pct": 1.4887159908557719,
+  "natural": 98.77,
+  "FGSM": 95.48,
+  "PGD10": 95.93,
+  "PGD20": 92.31,
+  "CW": 84.88,
+  "AA": 73.76
+}
