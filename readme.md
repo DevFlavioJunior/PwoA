@@ -144,6 +144,16 @@ Artigo (Tabela I, Original ResNet-18 TRADES): Natural 84,10 / FGSM 58,97 / PGD10
 
 Nota sobre a execução 4x: a primeira execução do modelo 4x (`cifar10_resnet18_pwoa_075_final.json`, em 12/11/2026) caiu no `cluster-node6` (~3,7x mais lento que o `cluster-node9`) e atingiu o limite inicial de 4h na época 37 de 100 do ajuste fino (após concluir todas as 50 épocas de ADMM e o `hard_prune`). Esse resultado preliminar foi preservado, e uma nova execução completa de 150 épocas (50 ADMM + 100 ajuste fino) foi concluída em 13/11/2026 com limite de 12h e `--exclude=cluster-node6`, salvando separadamente em `cifar10_resnet18_pwoa_075_full.pt`, `results/cifar10_resnet18_pwoa_075_full_final.json` e `results/cifar10_resnet18_pwoa_075_full_cw20.json`.
 
+Tempo de treino e época do melhor checkpoint (retirados do log de cada execução; dados informados por Gabriel Clemente):
+
+| Execução | Tempo de treino | Época do melhor checkpoint (ajuste fino) |
+|---|---|---|
+| 4x preliminar (interrompido na época 37/100) | não concluído | 12 |
+| 4x completo (job 30208) | 12537,68 s (cerca de 3 h 29 min; 150 épocas) | 19 |
+| 8x completo | 7596,72 s (150 épocas) | 98 |
+
+O modelo salvo é o de maior acurácia sob PGD no conjunto de teste, então a seleção é otimista. O tempo depende do nó e da carga do cluster e não serve para comparar eficiência com o artigo. Os jobs 30145 e 30146 (reexecução do 4x) foram cancelados ainda na fila, sem executar: o primeiro entrou com o script antigo (limite de 4 h) porque o `git pull` falhou por conflito local no `.sbatch`, e o segundo foi substituído pelo job 30208.
+
 ## Extensão: poda estruturada por colunas (MNIST, 4x, todas as camadas)
 
 Os autores citam a poda estruturada como trabalho futuro. O código deles já traz a opção `-st column` (zera colunas inteiras do peso reformatado). Usamos `PWOA_PRUNE_ALL=1` com `-st column`, 75% das colunas de cada camada, com os mesmos hiperparâmetros da poda irregular (`scripts/mnist_pwoa_col.sbatch`; teste curto em `scripts/mnist_teste_col.sbatch`). Escolhemos colunas e não filtros porque, na `fc2` (10 saídas), podar linhas apagaria classes.
