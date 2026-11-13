@@ -1,0 +1,15 @@
+{
+  "model_file": "assets/models/cifar10_resnet18_pwoa_prune_0.75_irregular_mix_0_ree100.pt",
+  "dataset": "cifar10",
+  "model": "resnet18",
+  "eps": 0.03137254901960784,
+  "alpha": 0.00784313725490196,
+  "cw_steps": 20,
+  "n": 10000,
+  "zeros_pct": 74.90113175613091,
+  "natural": 84.36,
+  "FGSM": 57.61,
+  "PGD10": 51.01,
+  "PGD20": 49.69,
+  "CW": 48.04
+}

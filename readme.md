@@ -129,16 +129,16 @@ Artigo (Tabela II, PwoA, LeNet): 4x = 98,66 / 95,89 / 97,35 / 96,16 / CW 96,15 /
 
 ## Resultados no CIFAR-10 (ResNet-18 TRADES, 10.000 imagens de teste)
 
-| Modelo | Zeros no modelo | Natural | FGSM | PGD10 | PGD20 | CW (50 passos) | AutoAttack | Observação |
-|---|---|---|---|---|---|---|---|---|
-| Original (sem poda) | 0,00% | 84,05 | 58,84 | 53,70 | 52,84 | 50,80 | 49,84 | 1636127673-3280377-2f.pt |
-| 4x preliminar (`pr=0.75`) | 74,90% | 84,36 | 57,61 | 51,03 | 49,72 | 47,84 | 46,65 | 50 ADMM + 37/100 ajuste fino (limite 4h no node6, 12/11/2026) |
-| 4x completo (`pr=0.75`) | 74,90% | *(em execução)* | *(em execução)* | *(em execução)* | *(em execução)* | *(em execução)* | *(em execução)* | 50 ADMM + 100/100 ajuste fino (refeito c/ limite 12h e `--exclude=cluster-node6`, 12/11/2026) |
-| 8x completo (`pr=0.875`) | 87,38% | 84,44 | 55,71 | 46,39 | 44,35 | 42,89 | 41,69 | 50 ADMM + 100/100 ajuste fino (7596,72 s no node9, 12/11/2026) |
+| Modelo | Zeros no modelo | Natural | FGSM | PGD10 | PGD20 | CW (20 passos) | CW (50 passos) | AutoAttack | Observação |
+|---|---|---|---|---|---|---|---|---|---|
+| Original (sem poda) | 0,00% | 84,05 | 58,84 | 53,70 | 52,84 | 50,93 | 50,80 | 49,84 | `1636127673-3280377-2f.pt` |
+| 4x preliminar (`pr=0.75`) | 74,90% | 84,36 | 57,61 | 51,03 | 49,72 | 48,04 | 47,84 | 46,65 | 50 ADMM + 37/100 ajuste fino (limite 4h no node6, 12/11/2026) |
+| 4x completo (`pr=0.75`) | 74,90% | 84,37 | 57,64 | 51,06 | 49,64 | 47,92 | 47,66 | 46,60 | 50 ADMM + 100/100 ajuste fino (refeito completo em 13/11/2026) |
+| 8x completo (`pr=0.875`) | 87,38% | 84,44 | 55,71 | 46,39 | 44,35 | 43,43 | 42,89 | 41,69 | 50 ADMM + 100/100 ajuste fino (7596,72 s no node9, 12/11/2026) |
 
 Artigo (Tabela I, Original ResNet-18 TRADES): Natural 84,10 / FGSM 58,97 / PGD10 53,76 / PGD20 52,92 / CW 51,00 / AA 49,43. Artigo estendido (Tabela VIII, PwoA 4x, ResNet-18): Natural 86,07 / PGD10 49,61.
 
-Nota sobre a execução 4x: a primeira execução do modelo 4x (`cifar10_resnet18_pwoa_075_final.json`, em 12/11/2026) caiu no `cluster-node6` (~3,7x mais lento que o `cluster-node9`) e atingiu o limite inicial de 4h na época 37 de 100 do ajuste fino (após concluir todas as 50 épocas de ADMM e o `hard_prune`). Esse resultado preliminar foi preservado, e uma nova execução completa de 150 épocas (50 ADMM + 100 ajuste fino) foi lançada em 12/11/2026 com limite de 12h e `--exclude=cluster-node6`, salvando separadamente em `cifar10_resnet18_pwoa_075_full.pt` e `results/cifar10_resnet18_pwoa_075_full_final.json`.
+Nota sobre a execução 4x: a primeira execução do modelo 4x (`cifar10_resnet18_pwoa_075_final.json`, em 12/11/2026) caiu no `cluster-node6` (~3,7x mais lento que o `cluster-node9`) e atingiu o limite inicial de 4h na época 37 de 100 do ajuste fino (após concluir todas as 50 épocas de ADMM e o `hard_prune`). Esse resultado preliminar foi preservado, e uma nova execução completa de 150 épocas (50 ADMM + 100 ajuste fino) foi concluída em 13/11/2026 com limite de 12h e `--exclude=cluster-node6`, salvando separadamente em `cifar10_resnet18_pwoa_075_full.pt`, `results/cifar10_resnet18_pwoa_075_full_final.json` e `results/cifar10_resnet18_pwoa_075_full_cw20.json`.
 
 ## Diferenças em relação ao artigo e limitações
 

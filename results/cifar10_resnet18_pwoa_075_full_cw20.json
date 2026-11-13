@@ -1,0 +1,15 @@
+{
+  "model_file": "assets/models/cifar10_resnet18_pwoa_075_full.pt",
+  "dataset": "cifar10",
+  "model": "resnet18",
+  "eps": 0.03137254901960784,
+  "alpha": 0.00784313725490196,
+  "cw_steps": 20,
+  "n": 10000,
+  "zeros_pct": 74.90113175613091,
+  "natural": 84.37,
+  "FGSM": 57.64,
+  "PGD10": 51.06,
+  "PGD20": 49.64,
+  "CW": 47.92
+}
