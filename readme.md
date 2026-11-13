@@ -109,8 +109,9 @@ Resultados em results/*.json. Os arquivos *_aa500.json usam só 500 imagens e se
 | 4x, só convoluções | 1,19% | 98,81 | 96,01 | 97,70 | 96,37 | 96,36 | 93,88 | 89,69 |
 | 4x, todas as camadas | 74,97% | 98,82 | 96,29 | 97,68 | 96,35 | 96,30 | 93,89 | 88,78 |
 | 8x, só convoluções | 1,39% | 98,82 | 95,18 | 97,43 | 95,68 | 95,65 | 91,98 | 87,06 |
+| 16x, só convoluções | 1,49% | 98,77 | 95,48 | 95,93 | 92,31 | 92,23 | 84,88 | 73,76 |
 
-Artigo (Tabela II, PwoA, LeNet): 4x = 98,66 / 95,89 / 97,35 / 96,16 / CW 96,15 / AA 90,00; 8x = 98,66 / 95,69 / 97,13 / 95,61 / CW 95,60 / AA 87,37. Modelo original (Tabela I): 98,66 / PGD20 96,44 / CW 95,10 / AA 91,57.
+Artigo (Tabela II, PwoA, LeNet): 4x = 98,66 / 95,89 / 97,35 / 96,16 / CW 96,15 / AA 90,00; 8x = 98,66 / 95,69 / 97,13 / 95,61 / CW 95,60 / AA 87,37; 16x = 98,59 / 95,03 / 96,34 / 94,43 / CW 94,48 / AA 77,21. No 16x a nossa robustez fica 2,12 (PGD20), 2,25 (CW 20 passos) e 3,45 (AA) pontos abaixo do artigo; a causa não foi investigada (os hiperparâmetros do 4x foram reaproveitados). Modelo original (Tabela I): 98,66 / PGD20 96,44 / CW 95,10 / AA 91,57.
 
 ## Como reproduzir o CIFAR-10 (ResNet-18 TRADES, poda 4x e 8x)
 
@@ -142,6 +143,19 @@ Artigo (Tabela II, PwoA, LeNet): 4x = 98,66 / 95,89 / 97,35 / 96,16 / CW 96,15 /
 Artigo (Tabela I, Original ResNet-18 TRADES): Natural 84,10 / FGSM 58,97 / PGD10 53,76 / PGD20 52,92 / CW 51,00 / AA 49,43. Artigo estendido (Tabela VIII, PwoA 4x, ResNet-18): Natural 86,07 / PGD10 49,61.
 
 Nota sobre a execução 4x: a primeira execução do modelo 4x (`cifar10_resnet18_pwoa_075_final.json`, em 12/11/2026) caiu no `cluster-node6` (~3,7x mais lento que o `cluster-node9`) e atingiu o limite inicial de 4h na época 37 de 100 do ajuste fino (após concluir todas as 50 épocas de ADMM e o `hard_prune`). Esse resultado preliminar foi preservado, e uma nova execução completa de 150 épocas (50 ADMM + 100 ajuste fino) foi concluída em 13/11/2026 com limite de 12h e `--exclude=cluster-node6`, salvando separadamente em `cifar10_resnet18_pwoa_075_full.pt`, `results/cifar10_resnet18_pwoa_075_full_final.json` e `results/cifar10_resnet18_pwoa_075_full_cw20.json`.
+
+## Extensão: poda estruturada por colunas (MNIST, 4x, todas as camadas)
+
+Os autores citam a poda estruturada como trabalho futuro. O código deles já traz a opção `-st column` (zera colunas inteiras do peso reformatado). Usamos `PWOA_PRUNE_ALL=1` com `-st column`, 75% das colunas de cada camada, com os mesmos hiperparâmetros da poda irregular (`scripts/mnist_pwoa_col.sbatch`; teste curto em `scripts/mnist_teste_col.sbatch`). Escolhemos colunas e não filtros porque, na `fc2` (10 saídas), podar linhas apagaria classes.
+
+| Poda | Zeros | Natural | FGSM | PGD10 | PGD20 | CW (20 passos) | CW (50 passos) | AutoAttack |
+|---|---|---|---|---|---|---|---|---|
+| Irregular, todas as camadas | 74,97% | 98,82 | 96,29 | 97,68 | 96,35 | 96,30 | 93,89 | 88,78 |
+| Por colunas, todas as camadas | 74,97% | 98,78 | 91,56 | 87,91 | 64,67 | 64,62 | 32,65 | 18,92 |
+
+A acurácia natural se mantém, mas a robustez colapsa sob ataques fortes. Não ajustamos hiperparâmetros para a poda estruturada, então o resultado não mostra que ela seja inviável no PwoA, só que não funciona com os hiperparâmetros da poda irregular. Uma execução, semente 1234, treino de 2037,42 s. Resultados em `results/mnist_pwoa_col_all_075_final.json` e `results/mnist_pwoa_col_all_075_cw20.json`.
+
+Verificação da estrutura (`python check_estrutura.py assets/models/mnist_lenet3_pwoa_colall_0.75_column_mix_0_ree20.pt`): em cada camada a fração de pesos zero é igual à de colunas inteiras zeradas (conv1 72%, que tem 25 colunas; conv2, fc1 e fc2 75%), e nenhuma linha ficou zerada.
 
 ## Diferenças em relação ao artigo e limitações
 

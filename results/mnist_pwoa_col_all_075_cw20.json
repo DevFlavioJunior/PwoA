@@ -1,0 +1,15 @@
+{
+  "model_file": "assets/models/mnist_lenet3_pwoa_colall_0.75_column_mix_0_ree20.pt",
+  "dataset": "mnist",
+  "model": "lenet3",
+  "eps": 0.3,
+  "alpha": 0.01,
+  "cw_steps": 20,
+  "n": 10000,
+  "zeros_pct": 74.97338633874809,
+  "natural": 98.78,
+  "FGSM": 91.56,
+  "PGD10": 87.91,
+  "PGD20": 64.67,
+  "CW": 64.62
+}
