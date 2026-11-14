@@ -1,0 +1,16 @@
+{
+  "model_file": "assets/models/cifar100_wrn34-10_prune_0.875_irregular_teacher_LBGAT_student_LBGAT_mix_0.2.pt",
+  "dataset": "cifar100",
+  "model": "wrn34-10",
+  "eps": 0.03137254901960784,
+  "alpha": 0.00784313725490196,
+  "cw_steps": 50,
+  "n": 10000,
+  "zeros_pct": 87.45691974110413,
+  "natural": 61.3,
+  "FGSM": 35.63,
+  "PGD10": 32.09,
+  "PGD20": 31.61,
+  "CW": 27.08,
+  "AA": 25.55
+}
