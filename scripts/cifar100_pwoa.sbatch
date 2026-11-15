@@ -19,7 +19,7 @@
 #   sbatch --job-name=pwoa_0.875_0.2 scripts/cifar100_pwoa.sbatch 0.875 0.2
 #   sbatch --job-name=pwoa_0.9375_0.2 scripts/cifar100_pwoa.sbatch 0.9375 0.2
 
-set -euo pipefail
+set -eo pipefail
 
 PR=${1:-0.875}
 MIX=${2:-0.2}
