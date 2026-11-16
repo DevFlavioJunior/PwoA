@@ -109,9 +109,13 @@ Resultados em results/*.json. Os arquivos *_aa500.json usam só 500 imagens e se
 | 4x, só convoluções | 1,19% | 98,81 | 96,01 | 97,70 | 96,37 | 96,36 | 93,88 | 89,69 |
 | 4x, todas as camadas | 74,97% | 98,82 | 96,29 | 97,68 | 96,35 | 96,30 | 93,89 | 88,78 |
 | 8x, só convoluções | 1,39% | 98,82 | 95,18 | 97,43 | 95,68 | 95,65 | 91,98 | 87,06 |
+| 8x, todas as camadas | 87,47% | 98,75 | 95,84 | 97,30 | 95,38 | 95,31 | 91,57 | 85,69 |
 | 16x, só convoluções | 1,49% | 98,77 | 95,48 | 95,93 | 92,31 | 92,23 | 84,88 | 73,76 |
+| 16x, todas as camadas | 93,72% | 98,77 | 90,19 | 92,08 | 81,58 | 81,41 | 60,09 | 44,30 |
 
 Artigo (Tabela II, PwoA, LeNet): 4x = 98,66 / 95,89 / 97,35 / 96,16 / CW 96,15 / AA 90,00; 8x = 98,66 / 95,69 / 97,13 / 95,61 / CW 95,60 / AA 87,37; 16x = 98,59 / 95,03 / 96,34 / 94,43 / CW 94,48 / AA 77,21. No 16x a nossa robustez fica 2,12 (PGD20), 2,25 (CW 20 passos) e 3,45 (AA) pontos abaixo do artigo; a causa não foi investigada (os hiperparâmetros do 4x foram reaproveitados). Modelo original (Tabela I): 98,66 / PGD20 96,44 / CW 95,10 / AA 91,57.
+
+Com a poda em todas as camadas (taxa uniforme, como o artigo define), o 8x fica 1,68 ponto abaixo do artigo no AutoAttack (85,69 contra 87,37) e o 16x fica 32,91 pontos abaixo (44,30 contra 77,21). A causa não foi investigada: os hiperparâmetros do 4x foram reaproveitados sem ajuste e há uma única execução. No 16x, o PGD10 (92,08) fica 10,50 pontos acima do PGD20 (81,58) e o CW de 50 passos (60,09) fica 21,32 pontos abaixo do de 20 passos (81,41). Comandos: `sbatch scripts/mnist_pwoa_var.sbatch 0.875 1 all` e `... 0.9375 1 all`, avaliados com `eval_final.sbatch` e `eval_cw20.sbatch`.
 
 ## Como reproduzir o CIFAR-10 (ResNet-18 TRADES, poda 4x e 8x)
 
@@ -199,7 +203,22 @@ Os scripts com sufixo _gabriel são uma variante com argumentos opcionais, manti
 
 Não há valores de referência do artigo para este conjunto. A poda custa no máximo 0,13 ponto de acurácia natural e 1,03 ponto de AutoAttack; diferenças desse tamanho, com uma execução por configuração, estão perto do ruído.
 
+## CIFAR-100 (WRN-34-10, professor LBGAT)
+
+Script: `scripts/cifar100_pwoa.sbatch <taxa> <mix_ratio>`, com os hiperparâmetros do `scripts/cifar100.sh` dos autores (50 épocas de ADMM e 100 de ajuste fino, SGD, cosine, lx 5e-7, ly 2e-6, tau 30, alpha 100). Raio 8/255, passo 2/255, 10.000 imagens, uma execução por configuração. O professor sem poda não foi avaliado.
+
+| Modelo | Zeros | Natural | FGSM | PGD10 | PGD20 | CW (20 passos) | CW (50 passos) | AutoAttack |
+|---|---|---|---|---|---|---|---|---|
+| 4x (mix 0) | 74,96% | 61,23 | 36,46 | 33,21 | 32,72 | 28,47 | 28,39 | 26,62 |
+| 8x (mix 0) | 87,46% | 61,27 | 35,49 | 30,02 | 29,03 | 25,02 | 24,74 | 22,36 |
+| 16x (mix 0) | 93,70% | 62,23 | 31,84 | 21,31 | 19,61 | 15,69 | 15,26 | 14,45 |
+| 4x (mix 0,2, variante) | 74,96% | 60,77 | 36,50 | 33,38 | 32,97 | 28,88 | 28,78 | 27,39 |
+| 8x (mix 0,2, variante) | 87,46% | 61,30 | 35,63 | 32,09 | 31,61 | 27,18 | 27,08 | 25,55 |
+| 16x (mix 0,2, variante) | 93,70% | 60,52 | 33,54 | 29,99 | 29,27 | 24,83 | 24,65 | 23,05 |
+
+Artigo (Tabela IV, PwoA): 4x = 60,92 / 36,70 / 33,08 / 32,59 / CW 28,40 / AA 26,44; 8x = 61,44 / 35,61 / 31,19 / 30,45 / CW 26,32 / AA 24,20; 16x = 62,53 / 35,15 / 29,05 / 27,88 / CW 24,08 / AA 21,43. O 4x (mix 0) fica a menos de 0,35 ponto do artigo; o 8x e o 16x ficam 1,84 e 6,98 pontos abaixo no AutoAttack. A variante com mix 0,2 usa exemplos adversariais em 20% dos lotes e não é o PwoA.
+
 ## Em andamento
 
 - CIFAR-10: concluído (original, 4x completo, 8x e o 4x preliminar, que fica registrado como tal).
-- CIFAR-100: em andamento (José Lucas).
+- CIFAR-100: concluído (4x e 8x com mix 0 por José Lucas; 16x com mix 0 e a variante com mix 0,2 por Gabriel Clemente, conforme os commits). Falta avaliar o professor LBGAT sem poda.
