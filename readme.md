@@ -99,7 +99,7 @@ Python 3.10.12, torch 2.14.1 (CUDA 13), torchvision 0.29.2, torchattacks 3.5.1, 
 
         sbatch scripts/eval_final.sbatch assets/models/<modelo>.pt <nome_do_resultado>
 
-Resultados em results/*.json. Os arquivos *_aa500.json usam só 500 imagens e servem apenas de teste de tempo.
+Resultados em results/*.json.
 
 ## Resultados no MNIST (10.000 imagens de teste, uma execução por configuração)
 
@@ -146,19 +146,13 @@ Com a poda em todas as camadas (taxa uniforme, como o artigo define), o 8x fica 
 
 Artigo (Tabela I, Original ResNet-18 TRADES): Natural 84,10 / FGSM 58,97 / PGD10 53,76 / PGD20 52,92 / CW 51,00 / AA 49,43. Artigo estendido (Tabela VIII, PwoA 4x, ResNet-18): Natural 86,07 / PGD10 49,61.
 
-Nota sobre a execução 4x: a primeira execução do modelo 4x (`cifar10_resnet18_pwoa_075_final.json`, em 12/11/2026) caiu no `cluster-node6` (~3,7x mais lento que o `cluster-node9`) e atingiu o limite inicial de 4h na época 37 de 100 do ajuste fino (após concluir todas as 50 épocas de ADMM e o `hard_prune`). Esse resultado preliminar foi preservado, e uma nova execução completa de 150 épocas (50 ADMM + 100 ajuste fino) foi concluída em 13/11/2026 com limite de 12h e `--exclude=cluster-node6`, salvando separadamente em `cifar10_resnet18_pwoa_075_full.pt`, `results/cifar10_resnet18_pwoa_075_full_final.json` e `results/cifar10_resnet18_pwoa_075_full_cw20.json`.
 
-Tempo de treino e época do melhor checkpoint (retirados do log de cada execução; dados informados por Gabriel Clemente):
 
-| Execução | Tempo de treino | Época do melhor checkpoint (ajuste fino) |
 |---|---|---|
-| 4x preliminar (interrompido na época 37/100) | não concluído | 12 |
-| 4x completo (job 30208) | 12537,68 s (cerca de 3 h 29 min; 150 épocas) | 19 |
-| 8x completo | 7596,72 s (150 épocas) | 98 |
 
-O modelo salvo é o de maior acurácia sob PGD no conjunto de teste, então a seleção é otimista. O tempo depende do nó e da carga do cluster e não serve para comparar eficiência com o artigo. Os jobs 30145 e 30146 (reexecução do 4x) foram cancelados ainda na fila, sem executar: o primeiro entrou com o script antigo (limite de 4 h) porque o `git pull` falhou por conflito local no `.sbatch`, e o segundo foi substituído pelo job 30208.
+O modelo salvo é o de maior acurácia sob PGD no conjunto de teste, então a seleção é otimista. O 4x preliminar (limite de 4 h no node6) fica registrado como tal; o 4x completo é o que vale.
 
-## Extensão: poda estruturada por colunas (MNIST, 4x, todas as camadas)
+## Modificação da equipe: poda estruturada por colunas (MNIST, 4x, todas as camadas)
 
 Os autores citam a poda estruturada como trabalho futuro. O código deles já traz a opção `-st column` (zera colunas inteiras do peso reformatado). Usamos `PWOA_PRUNE_ALL=1` com `-st column`, 75% das colunas de cada camada, com os mesmos hiperparâmetros da poda irregular (`scripts/mnist_pwoa_col.sbatch`; teste curto em `scripts/mnist_teste_col.sbatch`). Escolhemos colunas e não filtros porque, na `fc2` (10 saídas), podar linhas apagaria classes.
 
@@ -191,7 +185,6 @@ Não existe modelo robusto público para o Fashion-MNIST, então treinamos o pro
         sbatch scripts/fmnist_pwoa.sbatch 0.75 1 all fmnist_lenet3_pgd.pt             # 4x, todas as camadas
         sbatch scripts/eval_fmnist.sbatch assets/models/<modelo>.pt <nome_do_resultado>
 
-Os scripts com sufixo _gabriel são uma variante com argumentos opcionais, mantida como foi enviada.
 
 ### Resultados no Fashion-MNIST (10.000 imagens de teste, raio 0,1, CW com 50 passos)
 
@@ -217,8 +210,3 @@ Script: `scripts/cifar100_pwoa.sbatch <taxa> <mix_ratio>`, com os hiperparâmetr
 | 16x (mix 0,2, variante) | 93,70% | 60,52 | 33,54 | 29,99 | 29,27 | 24,83 | 24,65 | 23,05 |
 
 Artigo (Tabela IV, PwoA): 4x = 60,92 / 36,70 / 33,08 / 32,59 / CW 28,40 / AA 26,44; 8x = 61,44 / 35,61 / 31,19 / 30,45 / CW 26,32 / AA 24,20; 16x = 62,53 / 35,15 / 29,05 / 27,88 / CW 24,08 / AA 21,43. O 4x (mix 0) fica a menos de 0,35 ponto do artigo; o 8x e o 16x ficam 1,84 e 6,98 pontos abaixo no AutoAttack. A variante com mix 0,2 usa exemplos adversariais em 20% dos lotes e não é o PwoA.
-
-## Em andamento
-
-- CIFAR-10: concluído (original, 4x completo, 8x e o 4x preliminar, que fica registrado como tal).
-- CIFAR-100: concluído (4x e 8x com mix 0 por José Lucas; 16x com mix 0 e a variante com mix 0,2 por Gabriel Clemente, conforme os commits). Falta avaliar o professor LBGAT sem poda.
